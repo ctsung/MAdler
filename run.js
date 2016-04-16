@@ -50,7 +50,7 @@ login({email: '', password: ''}, function callback (err, api) {
                     api.sendMessage('Sorry, but did you share your location with me?', message.threadID);
                 }
             } else if (message.body.match(/bored/i)) {
-                //easter eggs
+                api.sendMessage('I am wondering if you know that they already made a game of me. ;)\nhttp://kindersung.github.io/flappy/', message.threadID);
             }
         }
     });
