@@ -21,7 +21,17 @@ login({email: '', password: ''}, function callback (err, api) {
                 api.sendMessage('OK, now I got you. :)', message.threadID);
             }
         } else {
-            api.sendMessage(message.body, message.threadID);
+            if (message.body.match(/news/i)) {
+                //news
+            } else if (message.body.match(/live/i)) {
+                //live info
+            } else if (message.body.match(/nearest/i)) {
+                //nearest stop
+            } else if (message.body.match()) {
+                //route
+            } else if (message.body.match(/bored/i)) {
+                //easter eggs
+            }
         }
     });
 });
