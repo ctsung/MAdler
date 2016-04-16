@@ -1,5 +1,5 @@
 var login = require('facebook-chat-api');
-var rnv_api = require('rnv_api.js');
+var rnv_api = require('./src/index.js');
 
 var users_position = new Array();
 var rnv = new rnv_api();
@@ -30,27 +30,99 @@ login({email: '', password: ''}, function callback (err, api) {
             }
         } else {
             if (message.body.match(/news/i)) {
-                news = rnv.get_news();
+                rnv.news(function(news){
+                    for(n in news) {
+                        api.sendMessage(news[n].dateAsString + '\n' + news[n].title, message.threadID);
+                    }
+                    api.sendMessage('For more information, please go to https://www.rnv-online.de/aktuelles.html .', message.threadID);
+                });
 
             } else if (message.body.match(/live/i)) {
-                live_infos = rnv.get_live_infos();
+                rnv.ticker(function (live_info) {
+                    api.sendMessage(live_info[0].dateAsString + '\n' + live_info[0].title, message.threadID);
+                });
 
             } else if (message.body.match(/nearest/i)) {
                 if (users_position[message.senderID]) {
-                    nearest_stop = rnv.get_the_nearest_stop(users_position[message.senderID]);
+                    min = Number.MAX_VALUE;
+                    station_name = '';
+                    latitude = 0;
+                    longitude = 0;
+
+                    rnv.stations(function (station_infos) {
+                        for (s in station_infos.stations) {
+                            distance = Math.pow(station_infos.stations[s].latitude - users_position[message.senderID][0], 2) + Math.pow(station_infos.stations[s].longitude - users_position[message.senderID][1], 2);
+                            if (distance < min) {
+                                min = distance;
+                                station_name = station_infos.stations[s].longName;
+                                latitude = station_infos.stations[s].latitude;
+                                longitude = station_infos.stations[s].longitude;
+                            }
+                        }
+                        api.sendMessage('Seems that you are close to ' + station_name + ' station.', message.threadID);
+                        api.sendMessage('https://maps.here.com/directions/mix/Your-Location:' + users_position[message.senderID][0].toString() + ',' + users_position[message.senderID][1].toString() + '/' + station_name + ':' + latitude.toString() + ',' + longitude.toString(), message.threadID);
+
+                        if (min > 10) {
+                            api.sendMessage('By the way, are you sure you are in Germany?', message.threadID);
+                        }
+                    });
 
                 } else {
                     api.sendMessage('Sorry, but did you share your location with me?', message.threadID);
                 }
-            } else if (message.body.match()) {
+            } else if (message.body.match(/to /i)) {
                 if (users_position[message.senderID]) {
-                    route = rnv.get_route(users_position[message.senderID], destination);
+                    ask_route = false;
+                    station_name_des = '';
+                    latitude_des = 0;
+                    longitude_des = 0;
+
+                    rnv.stations(function (station_infos) {
+                        for (s in station_infos.stations) {
+                            console.log(message.body);
+                            console.log(station_infos.stations[s].longName);
+                            if (message.body.indexOf(station_infos.stations[s].longName) > -1) {
+                                ask_route = true;
+                                station_name_des = station_infos.stations[s].longName;
+                                latitude_des = station_infos.stations[s].latitude;
+                                longitude_des = station_infos.stations[s].longitude;
+                                break;
+                            }
+                        }
+
+                        if (ask_route == true) {
+                            min = Number.MAX_VALUE;
+                            station_name = '';
+                            latitude = 0;
+                            longitude = 0;
+
+                            rnv.stations(function (station_infos) {
+                                for (s in station_infos.stations) {
+                                    distance = Math.pow(station_infos.stations[s].latitude - users_position[message.senderID][0], 2) + Math.pow(station_infos.stations[s].longitude - users_position[message.senderID][1], 2);
+                                    if (distance < min) {
+                                        min = distance;
+                                        station_name = station_infos.stations[s].longName;
+                                        latitude = station_infos.stations[s].latitude;
+                                        longitude = station_infos.stations[s].longitude;
+                                    }
+                                }
+
+                                api.sendMessage('https://maps.here.com/directions/mix/The-nearest-station-to-you:' + latitude.toString() + ',' + longitude.toString() + '/' + station_name_des + ':' + latitude_des.toString() + ',' + longitude_des.toString(), message.threadID);
+
+                            });
+
+                        } else {
+                            api.sendMessage('Oh by the way, I am wondering if you know that they already made a game of me. ;)\nhttp://kindersung.github.io/flappy/', message.threadID);
+                        }
+                    });
 
                 } else {
                     api.sendMessage('Sorry, but did you share your location with me?', message.threadID);
                 }
             } else if (message.body.match(/bored/i)) {
                 api.sendMessage('I am wondering if you know that they already made a game of me. ;)\nhttp://kindersung.github.io/flappy/', message.threadID);
+            } else {
+                api.sendMessage('Good... Good..... Oh by the way, I am wondering if you know that they already made a game of me. ;)\nhttp://kindersung.github.io/flappy/', message.threadID);
             }
         }
     });
