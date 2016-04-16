@@ -9,7 +9,10 @@ login({email: '', password: ''}, function callback (err, api) {
         if (message.attachments[0]) {
             type = message.attachments[0].type;
             if (type == 'sticker') {
+                transportation_stickers = ['665073523504168', '210852145739487', '209575122566323', '210852145739487', '567099163388580'];
+                msg = {sticker: transportation_stickers[Math.floor(Math.random() * transportation_stickers.length)]};
 
+                api.sendMessage(msg, message.threadID);
             } else if (type = 'share') {
                 position_url = message.attachments[0].facebookUrl;
 
