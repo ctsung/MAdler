@@ -22,6 +22,8 @@ login({email: '', password: ''}, function callback (err, api) {
                 users_position[message.senderID] = [position[1], position[2]];
 
                 api.sendMessage('OK, now I got you. :)', message.threadID);
+            } else {
+                api.sendMessage('I don\'t want to be straight, but... you look so sorry. :P', message.threadID);
             }
         } else {
             if (message.body.match(/news/i)) {
