@@ -1,5 +1,8 @@
 var login = require('facebook-chat-api');
+var rnv_api = require('rnv_api.js');
+
 var users_position = new Array();
+var rnv = new rnv_api();
 
 login({email: '', password: ''}, function callback (err, api) {
     if(err)
@@ -27,13 +30,25 @@ login({email: '', password: ''}, function callback (err, api) {
             }
         } else {
             if (message.body.match(/news/i)) {
-                //news
+                news = rnv.get_news();
+
             } else if (message.body.match(/live/i)) {
-                //live info
+                live_infos = rnv.get_live_infos();
+
             } else if (message.body.match(/nearest/i)) {
-                //nearest stop
+                if (users_position[message.senderID]) {
+                    nearest_stop = rnv.get_the_nearest_stop(users_position[message.senderID]);
+
+                } else {
+                    api.sendMessage('Sorry, but did you share your location with me?', message.threadID);
+                }
             } else if (message.body.match()) {
-                //route
+                if (users_position[message.senderID]) {
+                    route = rnv.get_route(users_position[message.senderID], destination);
+
+                } else {
+                    api.sendMessage('Sorry, but did you share your location with me?', message.threadID);
+                }
             } else if (message.body.match(/bored/i)) {
                 //easter eggs
             }
