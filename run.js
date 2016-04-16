@@ -13,7 +13,7 @@ login({email: '', password: ''}, function callback (err, api) {
                 msg = {sticker: transportation_stickers[Math.floor(Math.random() * transportation_stickers.length)]};
 
                 api.sendMessage(msg, message.threadID);
-            } else if (type = 'share') {
+            } else if (type == 'share') {
                 position_url = message.attachments[0].facebookUrl;
 
                 pattern = /where1=(.*)%2C\+(.*)&FORM/;
