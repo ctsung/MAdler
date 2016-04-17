@@ -79,8 +79,6 @@ login({email: '', password: ''}, function callback (err, api) {
 
                     rnv.stations(function (station_infos) {
                         for (s in station_infos.stations) {
-                            console.log(message.body);
-                            console.log(station_infos.stations[s].longName);
                             if (message.body.indexOf(station_infos.stations[s].longName) > -1) {
                                 ask_route = true;
                                 station_name_des = station_infos.stations[s].longName;
