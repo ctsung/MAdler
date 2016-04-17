@@ -76,6 +76,8 @@ login({email: '', password: ''}, function callback (err, api) {
                     station_name_des = '';
                     latitude_des = 0;
                     longitude_des = 0;
+                    min_ld = Number.MAX_VALUE;
+                    guess_name = '';
 
                     rnv.stations(function (station_infos) {
                         for (s in station_infos.stations) {
@@ -85,6 +87,38 @@ login({email: '', password: ''}, function callback (err, api) {
                                 latitude_des = station_infos.stations[s].latitude;
                                 longitude_des = station_infos.stations[s].longitude;
                                 break;
+                            } else {
+                                var m = new Array();
+
+                                for (i = 0; i < station_infos.stations[s].longName.length + 1; i++) {
+                                    m[i] = new Array();
+                                    for (j = 0; j < message.body.length + 1; j++) {
+                                        m[i][j] = 0;
+                                    }
+                                }
+
+                                for (i = 0; i < station_infos.stations[s].longName.length + 1; i++) {
+                                    m[i][0] = i;
+                                }
+
+                                for (j = 0; j < message.body.length + 1; j++) {
+                                    m[0][j] = j;
+                                }
+
+                                for (i = 1; i < station_infos.stations[s].longName.length + 1; i++) {
+                                    for (j = 1; j < message.body.length + 1; j++) {
+                                        if (station_infos.stations[s].longName[i - 1] == message.body[j - 1])
+                                            m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1]);
+                                        else
+                                            m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + 1);
+
+                                    }
+                                }
+                                if (m[station_infos.stations[s].longName.length][message.body.length] < min_ld && m[station_infos.stations[s].longName.length][message.body.length] < (message.body.length - station_infos.stations[s].longName.length + 2)) {
+                                    min_ld = m[station_infos.stations[s].longName.length][message.body.length];
+                                    guess_name = station_infos.stations[s].longName;
+                                }
+
                             }
                         }
 
@@ -110,7 +144,11 @@ login({email: '', password: ''}, function callback (err, api) {
                             });
 
                         } else {
-                            api.sendMessage('Oh by the way, I am wondering if you know that they already made a game of me. ;)\nhttp://kindersung.github.io/flappy/', message.threadID);
+                            if (min_ld < Number.MAX_VALUE) {
+                                api.sendMessage('Hmm ... Did you mean ' + guess_name + '?', message.threadID);
+                            } else {
+                                api.sendMessage('Oh by the way, I am wondering if you know that they already made a game of me. ;)\nhttp://kindersung.github.io/flappy/', message.threadID);
+                            }
                         }
                     });
 
